@@ -1,0 +1,66 @@
+pm2 documentation: https://pm2.keymetrics.io/docs/usage/quick-start/
+
+aws code-deploy: https://medium.com/faun/deploy-a-php-application-on-ec2-with-github-and-aws-codepipeline-fb38cf204cbb
+
+1. Create appspec.yml in your root folder
+
+The appspec.yml is used by CodeDeploy to determine:
+What it should install onto your instances from your application revision in Amazon S3 or GitHub.
+Which lifecycle event hooks to run in response to deployment lifecycle events.
+The Lifecycle event hooks run in this order:
+ApplicationStop -> BeforeInstall -> AfterInstall -> ApplicationStart
+
+// ####### sample appspec.yml ################
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/html
+    overwrite: true
+hooks:
+  BeforeInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 300
+      runas: root
+  AfterInstall:
+    - location: scripts/install_composer_dependencies.sh
+      timeout: 300
+      runas: root
+    - location: scripts/start_server.sh
+      timeout: 30
+      runas: root
+  ApplicationStop:
+    - location: scripts/stop_server.sh
+      timeout: 30
+      runas: root
+//############################################
+
+
+2. Create S3 Access Role for EC2 Instance
+
+3. Install CodeDeploy Agent on EC2 (Linux)
+In AWS, service roles are used to grant permissions to an AWS service so it can access AWS resources. The policies that you attach to the service role determine which AWS resources the service can access and what it can do with those resources.
+
+
+## install prerequisites
+sudo apt-get install ruby
+sudo apt-get install apache2
+
+## install codedeploy
+cd /tmp
+wget https://aws-codedeploy-eu-central-1.s3.amazonaws.com/latest/install
+chmod +x ./install
+sudo ./install auto
+sudo service codedeploy-agent start
+sudo service codedeploy-agent status
+
+4. Now create a service role for CodeDeploy.
+In AWS, service roles are used to grant permissions to an AWS service so it can access AWS resources. The policies that you attach to the service role determine which AWS resources the service can access and what it can do with those resources.
+
+5. Create codebuild service
+
+https://docs.aws.amazon.com/codebuild/latest/userguide/troubleshooting.html
+
+6. Create codedeploy service
+
+7. Create pipeline
